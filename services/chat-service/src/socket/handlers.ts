@@ -15,6 +15,31 @@ function conversationRoom(conversationId: string): string {
 }
 
 /**
+ * Coleta os usuários atualmente conectados (em todas as instâncias, via adapter)
+ * e emite um `presence { online: true }` por usuário para o socket recém-chegado.
+ */
+async function sendPresenceSnapshot(
+  io: Server,
+  socket: AuthedSocket,
+  selfId: string
+): Promise<void> {
+  try {
+    const sockets = await io.fetchSockets();
+    const onlineUserIds = new Set<string>();
+    for (const s of sockets) {
+      const u = (s.data as { user?: SocketUser }).user;
+      if (u?.userId && u.userId !== selfId) onlineUserIds.add(u.userId);
+    }
+    for (const userId of onlineUserIds) {
+      socket.emit('presence', { userId, online: true });
+    }
+  } catch (err) {
+    // O adapter pode não estar pronto em cenários sem Redis; ignora silenciosamente.
+    console.warn(`[socket][${env.INSTANCE_ID}] presence snapshot falhou: ${(err as Error).message}`);
+  }
+}
+
+/**
  * Registra os handlers de uma conexão de socket já autenticada.
  */
 export function registerConnectionHandlers(io: Server, socket: AuthedSocket): void {
@@ -29,6 +54,11 @@ export function registerConnectionHandlers(io: Server, socket: AuthedSocket): vo
 
   // Presença: avisa os demais que o usuário ficou online.
   socket.broadcast.emit('presence', { userId: user.userId, online: true });
+
+  // Snapshot de presença: envia ao socket recém-conectado quem JÁ está online (em
+  // qualquer instância, via Redis adapter). Sem isto, quem conecta por último não
+  // saberia quem já estava conectado — só receberia eventos de quem entrasse depois.
+  void sendPresenceSnapshot(io, socket, user.userId);
 
   // conversation:join — entra na sala da conversa se for participante.
   socket.on('conversation:join', async (payload: { conversationId?: string } = {}) => {

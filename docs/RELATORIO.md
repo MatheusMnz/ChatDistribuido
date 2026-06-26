@@ -2,7 +2,7 @@
 
 **Disciplina:** Sistemas Distribuídos — CEFET-MG — 2026/1
 **Professora:** Michelle Hanne
-**Código-fonte:** `<INSIRA AQUI A URL DO SEU REPOSITÓRIO>`
+**Código-fonte:** `<https://github.com/MatheusMnz/ChatDistribuido>`
 
 > Relatório com as decisões de projeto/implementação e a avaliação dos estudos de
 > caso. (Máx. 5 páginas — ao exportar para PDF, ajuste conforme necessário.)
@@ -130,7 +130,7 @@ rodam contra a **stack real** subida via Docker.
   `chat-service`, troca mensagens 1:1 e 1:N, valida persistência no histórico e
   autorização (não-participante recebe **403**). Cobre também a comunicação do
   *front-end* com o *backend* (mesmo contrato REST/WebSocket consumido pela SPA).
-- **Total automatizado por serviço:** auth **20/20** e chat **24/24** testes
+- **Total automatizado por serviço:** auth **20/20** e chat **25/25** testes
   passando.
 
 ### 3.3 Teste de Concorrência/Carga

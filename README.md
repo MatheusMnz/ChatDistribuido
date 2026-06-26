@@ -32,7 +32,7 @@ Navegador ─► NGINX :8080 ─┬─► auth-service :4000 ─► PostgreSQL
 Pré-requisito: **Docker** e **Docker Compose**.
 
 ```bash
-git clone <URL-DO-REPOSITORIO>
+git clone <https://github.com/MatheusMnz/ChatDistribuido>
 cd chat-distribuido
 cp .env.example .env          # (opcional) ajuste o JWT_SECRET
 docker compose up --build
@@ -67,7 +67,7 @@ docker compose stop chat-service-1
 
 ```bash
 cd services/auth-service && npm install && npm test     # 20 testes
-cd services/chat-service && npm install && npm test     # 23 testes (inclui socket em tempo real)
+cd services/chat-service && npm install && npm test     # 25 testes (inclui socket em tempo real)
 ```
 
 Os testes do chat usam `mongodb-memory-server` e os do auth mockam o repositório —

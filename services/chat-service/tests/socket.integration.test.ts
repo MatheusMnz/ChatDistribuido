@@ -93,6 +93,41 @@ describe('Socket.IO integration (tempo real + persistência)', () => {
     }
   });
 
+  it('envia snapshot de presença: quem entra por último vê quem já está online', async () => {
+    // userA conecta primeiro.
+    const clientA = await connectClient(port, token('userA', 'alice'));
+    await new Promise((r) => setTimeout(r, 50));
+
+    try {
+      // userB conecta depois e deve receber o presence de userA (snapshot).
+      const clientB = ClientIO(`http://localhost:${port}`, {
+        auth: { token: token('userB', 'bob') },
+        transports: ['websocket'],
+        reconnection: false
+      });
+
+      const sawUserA = new Promise<any>((resolve) => {
+        clientB.on('presence', (p: any) => {
+          if (p.userId === 'userA' && p.online) resolve(p);
+        });
+      });
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          clientB.on('connect', () => resolve());
+          clientB.on('connect_error', reject);
+        });
+        const presence = await sawUserA;
+        expect(presence.userId).toBe('userA');
+        expect(presence.online).toBe(true);
+      } finally {
+        clientB.disconnect();
+      }
+    } finally {
+      clientA.disconnect();
+    }
+  });
+
   it('relaya typing para a sala da conversa', async () => {
     const conv = await createConversation({
       type: 'direct',

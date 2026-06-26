@@ -6,6 +6,7 @@ cada funcionalidade (1:1, 1:N, tempo real, histórico, presença, alta disponibi
 e balanceamento de carga).
 
 > Trabalho Final de Sistemas Distribuídos — CEFET-MG (2026/1).
+> **Código-fonte:** `<https://github.com/MatheusMnz/ChatDistribuido>`
 > Relatório acadêmico resumido (≤5 páginas): [RELATORIO.md](RELATORIO.md).
 > Contrato técnico de APIs/eventos: [ARCHITECTURE.md](ARCHITECTURE.md).
 
@@ -179,10 +180,10 @@ docker compose logs -f         # acompanha todos os logs em tempo real
 ### 6.4 Tempo real (digitação e presença)
 - Comece a digitar numa janela → a outra mostra **"está digitando…"**.
 - O status **online/offline** aparece nos contatos.
-  - *Observação:* a presença é enviada por *push* no momento em que cada usuário
-    conecta/desconecta. Quem conecta primeiro vê quem chega depois; um cliente que
-    entra por último pode não ver imediatamente quem já estava online até haver uma
-    nova interação (limitação conhecida — não afeta o envio de mensagens).
+  - *Como funciona:* ao conectar, o servidor envia um **snapshot** de quem já está
+    online (consultando todas as instâncias via Redis) e, em seguida, novas
+    conexões/desconexões são notificadas por *push*. Assim, tanto quem entra primeiro
+    quanto quem entra por último enxergam corretamente os usuários online.
 
 ### 6.5 Histórico persistido
 1. Feche a janela do `bob`, mande mais mensagens pela `ana`.
@@ -286,7 +287,7 @@ cd C:\Users\mathe\chat-distribuido\services\auth-service
 npm install; npm test          # 20 testes (validação de credenciais, JWT, etc.)
 
 cd C:\Users\mathe\chat-distribuido\services\chat-service
-npm install; npm test          # 24 testes (persistência de mensagem, tempo real via socket, etc.)
+npm install; npm test          # 25 testes (persistência de mensagem, tempo real via socket, etc.)
 ```
 - `auth-service`: mocka o repositório → não precisa de Postgres.
 - `chat-service`: usa `mongodb-memory-server` → não precisa de Mongo/Redis.
@@ -308,7 +309,7 @@ Parâmetros: `USERS=20 MSGS=10 npm run load`, `REQUESTS=100 npm run lb`.
 | Teste | Resultado |
 |---|---|
 | Unitários auth-service | **20/20** ✓ (≈ 94% de cobertura) |
-| Unitários/integração chat-service | **24/24** ✓ (inclui socket em tempo real) |
+| Unitários/integração chat-service | **25/25** ✓ (inclui socket em tempo real) |
 | Integração ponta-a-ponta (`e2e`) | **16/16** verificações ✓ |
 | Carga (`load`) | 12 usuários, **720/720 entregas (100%)**, vazão ≈ **1.513/s**, latência **p50/p95/p99 = 69/111/130 ms** |
 | Balanceamento (`lb`) | **20** na chat-1 / **20** na chat-2 ✓ |
@@ -342,7 +343,7 @@ Parâmetros: `USERS=20 MSGS=10 npm run load`, `REQUESTS=100 npm run lb`.
 | `failed to connect to the docker API` | Docker Desktop não está rodando — abra o app e aguarde o daemon. |
 | Porta 8080/5432/27017 "in use" | Outro processo usa a porta. Pare-o ou ajuste a porta no `docker-compose.yml`. |
 | Abrir 2 abas normais loga na mesma conta | `localStorage` é compartilhado entre abas normais. Use janela anônima / outro navegador. |
-| Não vejo o outro usuário "online" | A presença é push em connect/disconnect e não há snapshot inicial — quem entra por último pode não ver quem já estava online (não afeta as mensagens). |
+| Não vejo o outro usuário "online" | O servidor envia um snapshot de presença ao conectar; se ainda assim não aparecer, verifique se as duas instâncias do chat e o Redis estão no ar (`docker compose ps`). |
 | Mudei o front-end e não atualizou | Rebuild da imagem: `docker compose up -d --build frontend`. |
 | Mudei o `nginx.conf` | É volume montado: `docker compose restart gateway`. |
 | Quero zerar tudo | `docker compose down -v` (apaga os dados) e suba de novo. |
