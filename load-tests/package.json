@@ -1,0 +1,21 @@
+{
+  "name": "chat-load-tests",
+  "version": "1.0.0",
+  "description": "Testes de concorrência/carga e integração ponta-a-ponta do Sistema de Chat Distribuído",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "load": "ts-node src/loadTest.ts",
+    "e2e": "ts-node src/e2eIntegration.ts",
+    "lb": "ts-node src/loadBalancingCheck.ts"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
